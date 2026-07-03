@@ -206,7 +206,7 @@ const GID_HOME   = '2065988261';
 const GID_INS    = '1403038687';
 const GID_RECV   = '1208514193';
 const SYNC_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes
-const DATA_VER = 'v2-2026-07-04';
+const DATA_VER = 'v3-2026-07-04';
 // Original loan principal amounts (fixed at loan signing — cell C1 of each sheet,
 // not reliably reachable via gviz's auto-detected data range, so hardcoded here).
 const HOME_INITIAL_DEFAULT = 5000000;
@@ -624,4 +624,41 @@ function renderPayoffBlock(prefix, resultElId, chartId, color){
 }
 
 function calcPayoff(){
-  const h = renderPayoffBlock('hl','hlResult','chartHlProjection','#4f8cff
+  const h = renderPayoffBlock('hl','hlResult','chartHlProjection','#4f8cff');
+  const i = renderPayoffBlock('in','inResult','chartInProjection','#22c58b');
+
+  const cb = document.getElementById('combinedResult');
+  if(!isFinite(h.months) || !isFinite(i.months)){
+    cb.innerHTML = `<div style="font-size:14px;color:var(--sub)">⏳ ยังคำนวณยอดรวมไม่ได้ — ปรับค่างวดให้มากกว่าดอกเบี้ยรายเดือนก่อน</div>`;
+    return;
+  }
+  const later = h.totalMonths >= i.totalMonths ? h : i;
+  const laterName = h.totalMonths >= i.totalMonths ? 'ผ่อนบ้าน' : 'ผ่อนประกันภัย';
+  cb.innerHTML = `
+    <div class="label" style="color:var(--sub);font-size:12px;margin-bottom:6px;">สรุปรวม — หนี้บ้านทั้งหมดจะหมดเมื่อไหร่</div>
+    <div class="big">${monthsLabel(later.totalMonths).text} <small>นับจากวันนี้</small></div>
+    <div class="sub" style="margin-top:8px;color:var(--sub);font-size:13px;">
+      ตัวที่ผ่อนนานกว่าคือ <b style="color:var(--text)">${laterName}</b> — คาดว่าจะครบทั้งหมดประมาณ <b style="color:var(--text)">${fmtDate(later.payoffDate)}</b>
+    </div>`;
+}
+
+/* ============ LIB READINESS (handles slow/fallback CDN loads) ============ */
+function waitForLibs(cb, timeoutMs){
+  timeoutMs = timeoutMs || 10000;
+  const start = Date.now();
+  (function poll(){
+    if(typeof Chart !== 'undefined' && typeof gridjs !== 'undefined') return cb();
+    if(Date.now() - start > timeoutMs){ console.error('Chart.js/gridjs failed to load from all CDN sources'); return; }
+    setTimeout(poll, 100);
+  })();
+}
+
+/* ============ INIT ============ */
+(function init(){
+  if(loadFromCache()) waitForLibs(renderAll);
+  syncFromSheets(false);
+  setInterval(()=>syncFromSheets(false), SYNC_INTERVAL_MS);
+})();
+</script>
+</body>
+</html>
