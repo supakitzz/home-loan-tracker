@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -86,13 +86,13 @@ function loadScriptWithFallback(urls, onDone){
 <nav class="nav">
   <h1>🏠 Home Loan Tracker<span>Centro Westgate</span></h1>
   <a data-page="dashboard" class="active">Dashboard</a>
-  <a data-page="homeloan">ผ่อนบ้าน (Home Loan)</a>
-  <a data-page="insurance">ผ่อนประกันภัย (Insurance)</a>
-  <a data-page="contrib">ผู้ร่วมผ่อน (Contributors)</a>
-  <a data-page="payoff">คำนวณผ่อนครบ (Payoff Calc)</a>
+  <a data-page="homeloan">Home Loan</a>
+  <a data-page="insurance">Insurance</a>
+  <a data-page="contrib">Contributors</a>
+  <a data-page="payoff">Payoff Calculator</a>
   <div class="syncbox">
     <div>Last sync: <b id="lastSyncTxt">—</b></div>
-    <div>Auto-sync ทุก 15 นาที</div>
+    <div>Auto-sync every 15 min</div>
     <button id="syncBtn" onclick="syncFromSheets(true)">🔄 Sync Now</button>
   </div>
 </nav>
@@ -100,97 +100,97 @@ function loadScriptWithFallback(urls, onDone){
 <!-- DASHBOARD -->
 <div class="page active" id="page-dashboard">
   <h2>Dashboard</h2>
-  <p class="subtitle">ภาพรวมยอดผ่อนบ้าน Centro Westgate — ซิงก์จาก Google Sheet อัตโนมัติทุก 15 นาที</p>
+  <p class="subtitle">Overview of the Centro Westgate home loan — auto-synced from Google Sheet every 15 minutes</p>
   <div class="grid" id="dashCards"></div>
   <div class="row2">
     <div class="panel">
-      <h3>ยอดคงเหลือรายเดือน (Outstanding Balance)</h3>
+      <h3>Outstanding Balance (Monthly)</h3>
       <div class="chart-wrap"><canvas id="chartBalance"></canvas></div>
     </div>
     <div class="panel">
-      <h3>ดอกเบี้ย vs เงินต้น สะสม</h3>
+      <h3>Interest vs Principal (Cumulative)</h3>
       <div class="chart-wrap"><canvas id="chartSplit"></canvas></div>
     </div>
   </div>
   <div class="panel">
-    <h3>สรุปรายปี — ดอกเบี้ย / ค่างวด / เงินต้น</h3>
+    <h3>Yearly Summary — Interest / Installment / Principal</h3>
     <div class="chart-wrap"><canvas id="chartYearly"></canvas></div>
   </div>
 </div>
 
 <!-- HOME LOAN -->
 <div class="page" id="page-homeloan">
-  <h2>ผ่อนบ้าน <span class="chip home">Home Loan</span></h2>
-  <p class="subtitle">รายละเอียด transaction การผ่อนบ้านทั้งหมด — ธนาคาร, ค่างวด, ดอกเบี้ย, เงินต้น, ยอดคงเหลือ</p>
+  <h2>Home Loan <span class="chip home">Home Loan</span></h2>
+  <p class="subtitle">All home loan transaction details — bank, installment, interest, principal, outstanding balance</p>
   <div class="grid" id="homeCards"></div>
   <div class="panel">
-    <h3>ยอดคงเหลือ (Outstanding) ตามช่วงเวลา</h3>
+    <h3>Outstanding Balance Over Time</h3>
     <div class="chart-wrap"><canvas id="chartHomeBalance"></canvas></div>
   </div>
   <div class="panel">
-    <h3>รายการ Transaction ทั้งหมด</h3>
+    <h3>All Transactions</h3>
     <div id="gridHome"></div>
   </div>
 </div>
 
 <!-- INSURANCE -->
 <div class="page" id="page-insurance">
-  <h2>ผ่อนประกันภัยบ้าน <span class="chip ins">Insurance Loan</span></h2>
-  <p class="subtitle">รายละเอียด transaction การผ่อนประกันภัยคุ้มครองสินเชื่อบ้านทั้งหมด</p>
+  <h2>Home Insurance Loan <span class="chip ins">Insurance Loan</span></h2>
+  <p class="subtitle">All home insurance loan transaction details</p>
   <div class="grid" id="insCards"></div>
   <div class="panel">
-    <h3>ยอดคงเหลือ (Outstanding) ตามช่วงเวลา</h3>
+    <h3>Outstanding Balance Over Time</h3>
     <div class="chart-wrap"><canvas id="chartInsBalance"></canvas></div>
   </div>
   <div class="panel">
-    <h3>รายการ Transaction ทั้งหมด</h3>
+    <h3>All Transactions</h3>
     <div id="gridIns"></div>
   </div>
 </div>
 
 <!-- CONTRIBUTORS -->
 <div class="page" id="page-contrib">
-  <h2>ผู้ร่วมผ่อน (Contributors)</h2>
-  <p class="subtitle">สรุปยอดที่แต่ละคนจ่ายสมทบ (จากชีต "Home Loan Receive")</p>
+  <h2>Contributors</h2>
+  <p class="subtitle">Summary of contributions by each person (from the "Home Loan Receive" sheet)</p>
   <div class="grid" id="contribCards"></div>
   <div class="row2">
     <div class="panel">
-      <h3>สัดส่วนผู้จ่าย — ผ่อนบ้าน</h3>
+      <h3>Contribution Share — Home Loan</h3>
       <div class="chart-wrap"><canvas id="chartContribHome"></canvas></div>
     </div>
     <div class="panel">
-      <h3>สัดส่วนผู้จ่าย — ผ่อนประกันภัย</h3>
+      <h3>Contribution Share — Insurance</h3>
       <div class="chart-wrap"><canvas id="chartContribIns"></canvas></div>
     </div>
   </div>
   <div class="panel">
-    <h3>รายการจ่ายสมทบทั้งหมด</h3>
+    <h3>All Contributions</h3>
     <div id="gridContrib"></div>
   </div>
 </div>
 
 <!-- PAYOFF CALCULATOR -->
 <div class="page" id="page-payoff">
-  <h2>คำนวณว่าจะผ่อนครบภายในกี่ปี</h2>
-  <p class="subtitle">คำนวณจากยอดคงเหลือปัจจุบัน + อัตราดอกเบี้ย + ค่างวดต่อเดือน (ปรับตัวเลขได้เพื่อดู what-if)</p>
+  <h2>Payoff Calculator</h2>
+  <p class="subtitle">Calculated from current outstanding balance + interest rate + monthly payment (adjust the numbers to see what-if scenarios)</p>
 
   <div class="panel">
-    <h3>🏠 ผ่อนบ้าน (Home Loan)</h3>
+    <h3>🏠 Home Loan</h3>
     <div class="calc-form">
-      <div><label>ยอดคงเหลือ (บาท)</label><input type="number" id="hlBalance" oninput="calcPayoff()"></div>
-      <div><label>อัตราดอกเบี้ยต่อปี (%)</label><input type="number" step="0.01" id="hlRate" oninput="calcPayoff()"></div>
-      <div><label>ค่างวดต่อเดือน (บาท)</label><input type="number" id="hlPayment" oninput="calcPayoff()"></div>
+      <div><label>Outstanding Balance</label><input type="number" id="hlBalance" oninput="calcPayoff()"></div>
+      <div><label>Annual Interest Rate (%)</label><input type="number" step="0.01" id="hlRate" oninput="calcPayoff()"></div>
+      <div><label>Monthly Payment</label><input type="number" id="hlPayment" oninput="calcPayoff()"></div>
     </div>
     <div id="hlResult"></div>
     <div class="chart-wrap"><canvas id="chartHlProjection"></canvas></div>
   </div>
 
   <div class="panel">
-    <h3>🛡️ ผ่อนประกันภัยบ้าน (Insurance Loan)</h3>
+    <h3>🛡️ Home Insurance Loan</h3>
     <div class="calc-form">
-      <div><label>ยอดคงเหลือ (บาท)</label><input type="number" id="inBalance" oninput="calcPayoff()"></div>
-      <div><label>อัตราดอกเบี้ยต่อปี (%)</label><input type="number" step="0.01" id="inRate" oninput="calcPayoff()"></div>
-      <div><label>ค่างวดต่อเดือน (บาท)</label><input type="number" id="inPayment" oninput="calcPayoff()"></div>
+      <div><label>Outstanding Balance</label><input type="number" id="inBalance" oninput="calcPayoff()"></div>
+      <div><label>Annual Interest Rate (%)</label><input type="number" step="0.01" id="inRate" oninput="calcPayoff()"></div>
+      <div><label>Monthly Payment</label><input type="number" id="inPayment" oninput="calcPayoff()"></div>
     </div>
     <div id="inResult"></div>
     <div class="chart-wrap"><canvas id="chartInProjection"></canvas></div>
@@ -206,7 +206,7 @@ const GID_HOME   = '2065988261';
 const GID_INS    = '1403038687';
 const GID_RECV   = '1208514193';
 const SYNC_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes
-const DATA_VER = 'v3-2026-07-04';
+const DATA_VER = 'v4-2026-07-04-en';
 // Original loan principal amounts (fixed at loan signing — cell C1 of each sheet,
 // not reliably reachable via gviz's auto-detected data range, so hardcoded here).
 const HOME_INITIAL_DEFAULT = 5000000;
@@ -214,7 +214,7 @@ const INS_INITIAL_DEFAULT  = 348150;
 
 const THB = n => '฿' + (Math.round(n||0)).toLocaleString('en-US');
 const THB2 = n => '฿' + (n||0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
-const fmtDate = d => d ? d.toLocaleDateString('th-TH', {year:'numeric', month:'short', day:'numeric'}) : '—';
+const fmtDate = d => d ? d.toLocaleDateString('en-US', {year:'numeric', month:'short', day:'numeric'}) : '—';
 
 /* ============ STATE ============ */
 let homeTx = [], insTx = [], receiveTx = [];
@@ -352,7 +352,7 @@ function loadFromCache(){
 function renderAll(){
   const last = localStorage.getItem('hl_last_sync');
   const t = document.getElementById('lastSyncTxt');
-  if(t && last) t.textContent = new Date(last).toLocaleString('th-TH', {hour:'2-digit',minute:'2-digit',day:'2-digit',month:'short'});
+  if(t && last) t.textContent = new Date(last).toLocaleString('en-US', {hour:'2-digit',minute:'2-digit',day:'2-digit',month:'short'});
 
   renderDashboard();
   renderLoanPage('home', homeTx, homeInitial, 'gridHome', 'homeCards', 'chartHomeBalance');
@@ -378,24 +378,24 @@ function renderDashboard(){
   const hOut = lh? lh.outstanding : 0, iOut = li? li.outstanding : 0;
   const hPaid = homeInitial - hOut, iPaid = insInitial - iOut;
   const cards = [
-    {label:'ยอดคงเหลือ - บ้าน', value:THB(hOut), sub:`เริ่มต้น ${THB(homeInitial)} · ผ่อนแล้ว ${(hPaid/homeInitial*100||0).toFixed(1)}%`},
-    {label:'ยอดคงเหลือ - ประกันภัย', value:THB(iOut), sub:`เริ่มต้น ${THB(insInitial)} · ผ่อนแล้ว ${(iPaid/insInitial*100||0).toFixed(1)}%`},
-    {label:'ยอดคงเหลือรวม', value:THB(hOut+iOut), sub:`ผ่อนไปแล้วรวม ${THB(hPaid+iPaid)}`},
-    {label:'ดอกเบี้ยสะสมทั้งหมด', value:THB(sum(homeTx,'interest')+sum(insTx,'interest')), sub:'บ้าน + ประกันภัย รวมกัน'},
-    {label:'จำนวนงวดที่จ่ายแล้ว', value:(homeTx.length+insTx.length), sub:`บ้าน ${homeTx.length} · ประกันภัย ${insTx.length} งวด`},
-    {label:'อัปเดตล่าสุด (บ้าน)', value: lh? fmtDate(lh.date):'—', sub:`ธนาคาร ${lh?lh.bank:'—'} · ดอกเบี้ย ${lh?lh.rate.toFixed(2):'—'}%`},
+    {label:'Outstanding - Home', value:THB(hOut), sub:`Started ${THB(homeInitial)} · Paid ${(hPaid/homeInitial*100||0).toFixed(1)}%`},
+    {label:'Outstanding - Insurance', value:THB(iOut), sub:`Started ${THB(insInitial)} · Paid ${(iPaid/insInitial*100||0).toFixed(1)}%`},
+    {label:'Total Outstanding', value:THB(hOut+iOut), sub:`Total paid so far ${THB(hPaid+iPaid)}`},
+    {label:'Total Interest Paid', value:THB(sum(homeTx,'interest')+sum(insTx,'interest')), sub:'Home + Insurance combined'},
+    {label:'Payments Made', value:(homeTx.length+insTx.length), sub:`Home ${homeTx.length} · Insurance ${insTx.length} payments`},
+    {label:'Last Updated (Home)', value: lh? fmtDate(lh.date):'—', sub:`Bank ${lh?lh.bank:'—'} · Rate ${lh?lh.rate.toFixed(2):'—'}%`},
   ];
   document.getElementById('dashCards').innerHTML = cards.map(c=>`
     <div class="card"><div class="label">${c.label}</div><div class="value">${c.value}</div><div class="sub">${c.sub}</div></div>
   `).join('');
 
   drawLineChart('chartBalance', [
-    {label:'บ้าน (Home)', data: homeTx.map(x=>({x:x.date,y:x.outstanding})), color:'#4f8cff'},
-    {label:'ประกันภัย (Insurance)', data: insTx.map(x=>({x:x.date,y:x.outstanding})), color:'#22c58b'}
+    {label:'Home', data: homeTx.map(x=>({x:x.date,y:x.outstanding})), color:'#4f8cff'},
+    {label:'Insurance', data: insTx.map(x=>({x:x.date,y:x.outstanding})), color:'#22c58b'}
   ]);
 
   drawDoughnut('chartSplit',
-    ['เงินต้นที่จ่ายแล้ว','ดอกเบี้ยที่จ่ายแล้ว','ยอดคงเหลือ'],
+    ['Principal Paid','Interest Paid','Outstanding'],
     [hPaid+iPaid - (sum(homeTx,'interest')+sum(insTx,'interest')), sum(homeTx,'interest')+sum(insTx,'interest'), hOut+iOut],
     ['#22c58b','#f5a623','#2a3348']
   );
@@ -408,12 +408,12 @@ function renderLoanPage(kind, tx, initial, gridId, cardsId, chartId){
   const paid = initial - (latest?latest.outstanding:0);
   const color = kind==='home' ? '#4f8cff' : '#22c58b';
   const cards = [
-    {label:'ยอดกู้เริ่มต้น', value: THB(initial)},
-    {label:'ยอดคงเหลือปัจจุบัน', value: THB(latest?latest.outstanding:0)},
-    {label:'ผ่อนไปแล้ว', value: THB(paid), sub: initial? (paid/initial*100).toFixed(1)+'% ของยอดกู้':''},
-    {label:'ดอกเบี้ยสะสม', value: THB(sum(tx,'interest'))},
-    {label:'อัตราดอกเบี้ยล่าสุด', value: latest? latest.rate.toFixed(2)+'%' : '—', sub: latest? 'ธนาคาร '+latest.bank : ''},
-    {label:'ค่างวดเฉลี่ย 12 เดือนล่าสุด', value: THB(avgRecentPayment(tx,12))+' /เดือน'},
+    {label:'Initial Loan Amount', value: THB(initial)},
+    {label:'Current Outstanding', value: THB(latest?latest.outstanding:0)},
+    {label:'Paid So Far', value: THB(paid), sub: initial? (paid/initial*100).toFixed(1)+'% of loan':''},
+    {label:'Total Interest', value: THB(sum(tx,'interest'))},
+    {label:'Latest Interest Rate', value: latest? latest.rate.toFixed(2)+'%' : '—', sub: latest? 'Bank '+latest.bank : ''},
+    {label:'Avg Payment (Last 12mo)', value: THB(avgRecentPayment(tx,12))+' /month'},
   ];
   document.getElementById(cardsId).innerHTML = cards.map(c=>`
     <div class="card"><div class="label">${c.label}</div><div class="value">${c.value}</div><div class="sub">${c.sub||''}</div></div>
@@ -425,14 +425,14 @@ function renderLoanPage(kind, tx, initial, gridId, cardsId, chartId){
   gridEl.innerHTML = '';
   new gridjs.Grid({
     columns: [
-      {name:'วันที่', formatter:(c)=>fmtDate(c)},
-      {name:'ธนาคาร'},
-      {name:'ปีที่'},
-      {name:'อัตราดอกเบี้ย', formatter:(c)=>c.toFixed(2)+'%'},
-      {name:'ค่างวด', formatter:(c)=>THB2(c)},
-      {name:'ดอกเบี้ย', formatter:(c)=>THB2(c)},
-      {name:'เงินต้น', formatter:(c)=>THB2(c)},
-      {name:'ยอดคงเหลือ', formatter:(c)=>THB2(c)},
+      {name:'Date', formatter:(c)=>fmtDate(c)},
+      {name:'Bank'},
+      {name:'Year'},
+      {name:'Rate', formatter:(c)=>c.toFixed(2)+'%'},
+      {name:'Installment', formatter:(c)=>THB2(c)},
+      {name:'Interest', formatter:(c)=>THB2(c)},
+      {name:'Principal', formatter:(c)=>THB2(c)},
+      {name:'Outstanding', formatter:(c)=>THB2(c)},
     ],
     data: tx.slice().reverse().map(x=>[x.date, x.bank, x.year, x.rate, x.install, x.interest, x.principal, x.outstanding]),
     search:true, sort:true, pagination:{limit:15}, resizable:true,
@@ -454,13 +454,13 @@ function renderContrib(){
     <div class="card">
       <div class="label">${n}</div>
       <div class="value">${THB(byName[n].home+byName[n].ins)}</div>
-      <div class="sub">บ้าน ${THB(byName[n].home)} · ประกันภัย ${THB(byName[n].ins)}</div>
+      <div class="sub">Home ${THB(byName[n].home)} · Insurance ${THB(byName[n].ins)}</div>
     </div>
   `).join('') + `
     <div class="card">
-      <div class="label">รวมทั้งหมด</div>
+      <div class="label">Grand Total</div>
       <div class="value">${THB(totalHome+totalIns)}</div>
-      <div class="sub">บ้าน ${THB(totalHome)} · ประกันภัย ${THB(totalIns)}</div>
+      <div class="sub">Home ${THB(totalHome)} · Insurance ${THB(totalIns)}</div>
     </div>`;
 
   drawDoughnut('chartContribHome', names, names.map(n=>byName[n].home), ['#4f8cff','#f5a623','#22c58b','#e26fd8']);
@@ -470,12 +470,12 @@ function renderContrib(){
   gridEl.innerHTML = '';
   new gridjs.Grid({
     columns:[
-      {name:'ช่วง (Period)'},
-      {name:'ผู้จ่าย'},
-      {name:'วันที่รับโอน', formatter:(c)=>fmtDate(c)},
-      {name:'วันที่จ่ายจริง', formatter:(c)=>c? fmtDate(c):'—'},
-      {name:'ผ่อนบ้าน', formatter:(c)=>THB2(c)},
-      {name:'ผ่อนประกันภัย', formatter:(c)=>THB2(c)},
+      {name:'Period'},
+      {name:'Payer'},
+      {name:'Date Received', formatter:(c)=>fmtDate(c)},
+      {name:'Date Paid', formatter:(c)=>c? fmtDate(c):'—'},
+      {name:'Home Loan', formatter:(c)=>THB2(c)},
+      {name:'Insurance', formatter:(c)=>THB2(c)},
     ],
     data: receiveTx.slice().reverse().map(r=>[r.period, r.name, r.dateReceived, r.datePaid, r.homeAmt, r.insAmt]),
     search:true, sort:true, pagination:{limit:15}, resizable:true
@@ -532,8 +532,8 @@ function drawYearlySummary(id, home, ins){
   chartRefs[id] = new Chart(ctx, {
     type:'bar',
     data:{ labels: years, datasets:[
-      {label:'ดอกเบี้ย', data: years.map(y=>byYear[y].interest), backgroundColor:'#f5a623'},
-      {label:'เงินต้น', data: years.map(y=>byYear[y].principal), backgroundColor:'#22c58b'},
+      {label:'Interest', data: years.map(y=>byYear[y].interest), backgroundColor:'#f5a623'},
+      {label:'Principal', data: years.map(y=>byYear[y].principal), backgroundColor:'#22c58b'},
     ]},
     options:{
       responsive:true, maintainAspectRatio:false,
@@ -586,8 +586,8 @@ function monthsLabel(months){
   const total = Math.ceil(months);
   const y = Math.floor(total/12), m = total%12;
   let s = '';
-  if(y>0) s += y + ' ปี ';
-  s += m + ' เดือน';
+  if(y>0) s += y + (y===1?' year ':' years ');
+  s += m + (m===1?' month':' months');
   return {y,m,text:s.trim(), totalMonths: total};
 }
 
@@ -606,13 +606,13 @@ function renderPayoffBlock(prefix, resultElId, chartId, color){
   const el = document.getElementById(resultElId);
 
   if(!isFinite(months)){
-    el.innerHTML = `<div class="warn-banner">⚠️ ค่างวดต่อเดือนไม่พอจ่ายดอกเบี้ยรายเดือน (${THB(balance*(rate/100)/12)}/เดือน) — ผ่อนแบบนี้จะไม่มีวันครบ ต้องเพิ่มค่างวด</div>`;
+    el.innerHTML = `<div class="warn-banner">⚠️ Monthly payment doesn't cover the monthly interest (${THB(balance*(rate/100)/12)}/month) — at this rate it will never be paid off. Increase your payment.</div>`;
     destroyIfExists(chartId);
     return {months:Infinity};
   }
   const lbl = monthsLabel(months);
   const pdate = payoffDate(months);
-  el.innerHTML = `<div class="result-banner"><div class="big">${lbl.text} <small>(รวม ${lbl.totalMonths} งวด)</small></div><div class="sub" style="margin-top:6px;color:var(--sub);font-size:13px;">คาดว่าจะผ่อนครบประมาณ <b style="color:var(--text)">${fmtDate(pdate)}</b></div></div>`;
+  el.innerHTML = `<div class="result-banner"><div class="big">${lbl.text} <small>(${lbl.totalMonths} payments total)</small></div><div class="sub" style="margin-top:6px;color:var(--sub);font-size:13px;">Estimated payoff around <b style="color:var(--text)">${fmtDate(pdate)}</b></div></div>`;
 
   const pts = buildProjection(balance, rate, payment, lbl.totalMonths+2);
   const today = new Date();
@@ -629,16 +629,16 @@ function calcPayoff(){
 
   const cb = document.getElementById('combinedResult');
   if(!isFinite(h.months) || !isFinite(i.months)){
-    cb.innerHTML = `<div style="font-size:14px;color:var(--sub)">⏳ ยังคำนวณยอดรวมไม่ได้ — ปรับค่างวดให้มากกว่าดอกเบี้ยรายเดือนก่อน</div>`;
+    cb.innerHTML = `<div style="font-size:14px;color:var(--sub)">⏳ Cannot calculate the combined total yet — increase the payment above the monthly interest first</div>`;
     return;
   }
   const later = h.totalMonths >= i.totalMonths ? h : i;
-  const laterName = h.totalMonths >= i.totalMonths ? 'ผ่อนบ้าน' : 'ผ่อนประกันภัย';
+  const laterName = h.totalMonths >= i.totalMonths ? 'Home Loan' : 'Insurance Loan';
   cb.innerHTML = `
-    <div class="label" style="color:var(--sub);font-size:12px;margin-bottom:6px;">สรุปรวม — หนี้บ้านทั้งหมดจะหมดเมื่อไหร่</div>
-    <div class="big">${monthsLabel(later.totalMonths).text} <small>นับจากวันนี้</small></div>
+    <div class="label" style="color:var(--sub);font-size:12px;margin-bottom:6px;">Combined Summary — When will all debt be paid off</div>
+    <div class="big">${monthsLabel(later.totalMonths).text} <small>from today</small></div>
     <div class="sub" style="margin-top:8px;color:var(--sub);font-size:13px;">
-      ตัวที่ผ่อนนานกว่าคือ <b style="color:var(--text)">${laterName}</b> — คาดว่าจะครบทั้งหมดประมาณ <b style="color:var(--text)">${fmtDate(later.payoffDate)}</b>
+      The longer of the two is <b style="color:var(--text)">${laterName}</b> — estimated full payoff around <b style="color:var(--text)">${fmtDate(later.payoffDate)}</b>
     </div>`;
 }
 
