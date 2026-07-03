@@ -4,10 +4,27 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Home Loan Tracker — Centro Westgate</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gridjs/6.2.0/gridjs.umd.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gridjs/6.2.0/theme/mermaid.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gridjs/6.2.0/theme/mermaid.min.css" onerror="this.href='https://cdn.jsdelivr.net/npm/gridjs@6.2.0/dist/theme/mermaid.min.css'">
+<script>
+/* CDN fallback loader — tries multiple independent CDNs in order so a single
+   provider outage (e.g. cdnjs 503) doesn't take down the whole app. */
+function loadScriptWithFallback(urls, onDone){
+  var i = 0;
+  function tryNext(){
+    if(i >= urls.length){ console.error('All CDN sources failed for', urls); onDone && onDone(false); return; }
+    var url = urls[i++];
+    var s = document.createElement('script');
+    s.src = url;
+    s.onload = function(){ onDone && onDone(true); };
+    s.onerror = function(){ console.warn('CDN failed, trying next:', url); tryNext(); };
+    document.head.appendChild(s);
+  }
+  tryNext();
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" onerror="loadScriptWithFallback(['https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js','https://unpkg.com/chart.js@4.4.4/dist/chart.umd.min.js'])"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js" onerror="loadScriptWithFallback(['https://cdnjs.cloudflare.com/ajax/libs/chartjs-adapter-date-fns/3.0.0/chartjs-adapter-date-fns.bundle.min.js','https://unpkg.com/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js'])"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gridjs/6.2.0/gridjs.umd.js" onerror="loadScriptWithFallback(['https://cdn.jsdelivr.net/npm/gridjs@6.2.0/dist/gridjs.umd.js','https://unpkg.com/gridjs@6.2.0/dist/gridjs.umd.js'])"></script>
 <style>
   :root{
     --bg:#0f1420; --card:#171e2e; --card2:#1d2536; --border:#2a3348;
@@ -305,7 +322,7 @@ async function syncFromSheets(manual){
     localStorage.setItem('hl_last_sync', new Date().toISOString());
     localStorage.setItem('hl_data_ver', DATA_VER);
 
-    renderAll();
+    waitForLibs(renderAll);
   }catch(err){
     console.error('Sync failed', err);
     const t = document.getElementById('lastSyncTxt');
@@ -607,18 +624,4 @@ function renderPayoffBlock(prefix, resultElId, chartId, color){
 }
 
 function calcPayoff(){
-  const h = renderPayoffBlock('hl','hlResult','chartHlProjection','#4f8cff');
-  const i = renderPayoffBlock('in','inResult','chartInProjection','#22c58b');
-
-  const cb = document.getElementById('combinedResult');
-  if(!isFinite(h.months) || !isFinite(i.months)){
-    cb.innerHTML = `<div style="font-size:14px;color:var(--sub)">⏳ ยังคำนวณยอดรวมไม่ได้ — ปรับค่างวดให้มากกว่าดอกเบี้ยรายเดือนก่อน</div>`;
-    return;
-  }
-  const later = h.totalMonths >= i.totalMonths ? h : i;
-  const laterName = h.totalMonths >= i.totalMonths ? 'ผ่อนบ้าน' : 'ผ่อนประกันภัย';
-  cb.innerHTML = `
-    <div class="label" style="color:var(--sub);font-size:12px;margin-bottom:6px;">สรุปรวม — หนี้บ้านทั้งหมดจะหมดเมื่อไหร่</div>
-    <div class="big">${monthsLabel(later.totalMonths).text} <small>นับจากวันนี้</small></div>
-    <div class="sub" style="margin-top:8px;color:var(--sub);font-size:13px;">
-      ตัวที่ผ่อนนานกว่าคือ <b style="color:var(--text)">${laterName}</b> — คาดว่าจะครบทั้งหมดประมาณ <b style="color:var(--text)">${fmtDate(later.payoffDat
+  const h = renderPayoffBlock('hl','hlResult','chartHlProjection','#4f8cff
