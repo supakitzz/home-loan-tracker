@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Home Loan Tracker — Centro Westgate</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-adapter-date-fns/3.0.0/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gridjs/6.2.0/gridjs.umd.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gridjs/6.2.0/theme/mermaid.min.css">
+<style>
+  :root{
+    --bg:#0f1420; --card:#171e2e; --card2:#1d2536; --border:#2a3348;
+    --text:#e8ecf4; --sub:#93a0bb; --accent:#4f8cff; --accent2:#22c58b;
+    --warn:#f5a623; --danger:#f0556b; --home:#4f8cff; --ins:#22c58b;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:var(--bg);color:var(--text);}
+  .nav{position:fixed;left:0;top:0;bottom:0;width:210px;background:var(--card);border-right:1px solid var(--border);padding:18px 0;overflow-y:auto;z-index:10;}
+  .nav h1{font-size:15px;padding:0 18px 14px;margin:0 0 10px;border-bottom:1px solid var(--border);line-height:1.4;}
+  .nav h1 span{display:block;font-size:11px;color:var(--sub);font-weight:400;margin-top:2px;}
+  .nav a{display:block;padding:10px 18px;color:var(--sub);text-decoration:none;font-size:13.5px;border-left:3px solid transparent;cursor:pointer;}
+  .nav a:hover{color:var(--text);background:rgba(255,255,255,.03);}
+  .nav a.active{color:var(--text);border-left-color:var(--accent);background:rgba(79,140,255,.08);font-weight:600;}
+  .syncbox{margin:14px 14px 0;padding:10px 12px;background:var(--card2);border-radius:8px;font-size:11px;color:var(--sub);}
+  .syncbox b{color:var(--text);}
+  .syncbox button{width:100%;margin-top:8px;background:var(--accent);border:none;color:#fff;padding:7px;border-radius:6px;font-size:12px;cursor:pointer;}
+  .syncbox button:hover{background:#3d78ea;}
+  .page{display:none;margin-left:210px;padding:clamp(14px,3vw,28px) clamp(12px,2.5vw,24px) 48px;max-width:1280px;}
+  .page.active{display:block;}
+  @media (max-width:768px){ .nav{width:100%;height:auto;position:relative;} .page{margin-left:0;} }
+  h2{font-size:20px;margin:0 0 4px;}
+  .subtitle{color:var(--sub);font-size:13px;margin:0 0 20px;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:20px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;}
+  .card .label{font-size:12px;color:var(--sub);margin-bottom:6px;}
+  .card .value{font-size:24px;font-weight:700;}
+  .card .sub{font-size:11.5px;color:var(--sub);margin-top:4px;}
+  .chip{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;}
+  .chip.home{background:rgba(79,140,255,.15);color:var(--home);}
+  .chip.ins{background:rgba(34,197,139,.15);color:var(--ins);}
+  .panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:18px;}
+  .panel h3{margin:0 0 14px;font-size:15px;}
+  .chart-wrap{position:relative;height:280px;}
+  .row2{display:grid;grid-template-columns:1.3fr 1fr;gap:14px;}
+  @media (max-width:900px){.row2{grid-template-columns:1fr;}}
+  .calc-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px;}
+  .calc-form label{display:block;font-size:11.5px;color:var(--sub);margin-bottom:5px;}
+  .calc-form input{width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:7px;font-size:14px;}
+  .result-banner{background:linear-gradient(135deg,rgba(79,140,255,.12),rgba(34,197,139,.10));border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:16px;}
+  .result-banner .big{font-size:28px;font-weight:800;}
+  .result-banner .big small{font-size:14px;font-weight:500;color:var(--sub);}
+  .warn-banner{background:rgba(240,85,107,.12);border:1px solid rgba(240,85,107,.4);color:var(--danger);padding:12px 16px;border-radius:10px;font-size:13px;margin-bottom:16px;}
+  table.gridjs-table{font-size:12.5px;}
+  .gridjs-wrapper{border-radius:10px !important;}
+  .gridjs-th{background:var(--card2) !important;color:var(--text) !important;}
+  .gridjs-td{background:var(--card) !important;color:var(--text) !important;border-color:var(--border) !important;}
+  .gridjs-th{border-color:var(--border) !important;}
+  .gridjs-search-input,.gridjs-pagination .gridjs-pages button{background:var(--card2) !important;color:var(--text) !important;border-color:var(--border) !important;}
+  .gridjs-footer{background:transparent !important;border-color:var(--border) !important;}
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-thumb{background:#333d54;border-radius:4px;}
+  a.linklike{color:var(--accent);}
+  .loading{color:var(--sub);font-size:12.5px;padding:20px 0;}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <h1>🏠 Home Loan Tracker<span>Centro Westgate</span></h1>
+  <a data-page="dashboard" class="active">Dashboard</a>
+  <a data-page="homeloan">ผ่อนบ้าน (Home Loan)</a>
+  <a data-page="insurance">ผ่อนประกันภัย (Insurance)</a>
+  <a data-page="contrib">ผู้ร่วมผ่อน (Contributors)</a>
+  <a data-page="payoff">คำนวณผ่อนครบ (Payoff Calc)</a>
+  <div class="syncbox">
+    <div>Last sync: <b id="lastSyncTxt">—</b></div>
+    <div>Auto-sync ทุก 15 นาที</div>
+    <button id="syncBtn" onclick="syncFromSheets(true)">🔄 Sync Now</button>
+  </div>
+</nav>
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <h2>Dashboard</h2>
+  <p class="subtitle">ภาพรวมยอดผ่อนบ้าน Centro Westgate — ซิงก์จาก Google Sheet อัตโนมัติทุก 15 นาที</p>
+  <div class="grid" id="dashCards"></div>
+  <div class="row2">
+    <div class="panel">
+      <h3>ยอดคงเหลือรายเดือน (Outstanding Balance)</h3>
+      <div class="chart-wrap"><canvas id="chartBalance"></canvas></div>
+    </div>
+    <div class="panel">
+      <h3>ดอกเบี้ย vs เงินต้น สะสม</h3>
+      <div class="chart-wrap"><canvas id="chartSplit"></canvas></div>
+    </div>
+  </div>
+  <div class="panel">
+    <h3>สรุปรายปี — ดอกเบี้ย / ค่างวด / เงินต้น</h3>
+    <div class="chart-wrap"><canvas id="chartYearly"></canvas></div>
+  </div>
+</div>
+
+<!-- HOME LOAN -->
+<div class="page" id="page-homeloan">
+  <h2>ผ่อนบ้าน <span class="chip home">Home Loan</span></h2>
+  <p class="subtitle">รายละเอียด transaction การผ่อนบ้านทั้งหมด — ธนาคาร, ค่างวด, ดอกเบี้ย, เงินต้น, ยอดคงเหลือ</p>
+  <div class="grid" id="homeCards"></div>
+  <div class="panel">
+    <h3>ยอดคงเหลือ (Outstanding) ตามช่วงเวลา</h3>
+    <div class="chart-wrap"><canvas id="chartHomeBalance"></canvas></div>
+  </div>
+  <div class="panel">
+    <h3>รายการ Transaction ทั้งหมด</h3>
+    <div id="gridHome"></div>
+  </div>
+</div>
+
+<!-- INSURANCE -->
+<div class="page" id="page-insurance">
+  <h2>ผ่อนประกันภัยบ้าน <span class="chip ins">Insurance Loan</span></h2>
+  <p class="subtitle">รายละเอียด transaction การผ่อนประกันภัยคุ้มครองสินเชื่อบ้านทั้งหมด</p>
+  <div class="grid" id="insCards"></div>
+  <div class="panel">
+    <h3>ยอดคงเหลือ (Outstanding) ตามช่วงเวลา</h3>
+    <div class="chart-wrap"><canvas id="chartInsBalance"></canvas></div>
+  </div>
+  <div class="panel">
+    <h3>รายการ Transaction ทั้งหมด</h3>
+    <div id="gridIns"></div>
+  </div>
+</div>
+
+<!-- CONTRIBUTORS -->
+<div class="page" id="page-contrib">
+  <h2>ผู้ร่วมผ่อน (Contributors)</h2>
+  <p class="subtitle">สรุปยอดที่แต่ละคนจ่ายสมทบ (จากชีต "Home Loan Receive")</p>
+  <div class="grid" id="contribCards"></div>
+  <div class="row2">
+    <div class="panel">
+      <h3>สัดส่วนผู้จ่าย — ผ่อนบ้าน</h3>
+      <div class="chart-wrap"><canvas id="chartContribHome"></canvas></div>
+    </div>
+    <div class="panel">
+      <h3>สัดส่วนผู้จ่าย — ผ่อนประกันภัย</h3>
+      <div class="chart-wrap"><canvas id="chartContribIns"></canvas></div>
+    </div>
+  </div>
+  <div class="panel">
+    <h3>รายการจ่ายสมทบทั้งหมด</h3>
+    <div id="gridContrib"></div>
+  </div>
+</div>
+
+<!-- PAYOFF CALCULATOR -->
+<div class="page" id="page-payoff">
+  <h2>คำนวณว่าจะผ่อนครบภายในกี่ปี</h2>
+  <p class="subtitle">คำนวณจากยอดคงเหลือปัจจุบัน + อัตราดอกเบี้ย + ค่างวดต่อเดือน (ปรับตัวเลขได้เพื่อดู what-if)</p>
+
+  <div class="panel">
+    <h3>🏠 ผ่อนบ้าน (Home Loan)</h3>
+    <div class="calc-form">
+      <div><label>ยอดคงเหลือ (บาท)</label><input type="number" id="hlBalance" oninput="calcPayoff()"></div>
+      <div><label>อัตราดอกเบี้ยต่อปี (%)</label><input type="number" step="0.01" id="hlRate" oninput="calcPayoff()"></div>
+      <div><label>ค่างวดต่อเดือน (บาท)</label><input type="number" id="hlPayment" oninput="calcPayoff()"></div>
+    </div>
+    <div id="hlResult"></div>
+    <div class="chart-wrap"><canvas id="chartHlProjection"></canvas></div>
+  </div>
+
+  <div class="panel">
+    <h3>🛡️ ผ่อนประกันภัยบ้าน (Insurance Loan)</h3>
+    <div class="calc-form">
+      <div><label>ยอดคงเหลือ (บาท)</label><input type="number" id="inBalance" oninput="calcPayoff()"></div>
+      <div><label>อัตราดอกเบี้ยต่อปี (%)</label><input type="number" step="0.01" id="inRate" oninput="calcPayoff()"></div>
+      <div><label>ค่างวดต่อเดือน (บาท)</label><input type="number" id="inPayment" oninput="calcPayoff()"></div>
+    </div>
+    <div id="inResult"></div>
+    <div class="chart-wrap"><canvas id="chartInProjection"></canvas></div>
+  </div>
+
+  <div class="result-banner" id="combinedResult"></div>
+</div>
+
+<script>
+/* ============ CONFIG ============ */
+const SHEET_ID   = '1TABbzUuZPe61xrVLGr9BryajpWJGzbLa2Pi0qKeauwk';
+const GID_HOME   = '2065988261';
+const GID_INS    = '1403038687';
+const GID_RECV   = '1208514193';
+const SYNC_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes
+const DATA_VER = 'v2-2026-07-04';
+// Original loan principal amounts (fixed at loan signing — cell C1 of each sheet,
+// not reliably reachable via gviz's auto-detected data range, so hardcoded here).
+const HOME_INITIAL_DEFAULT = 5000000;
+const INS_INITIAL_DEFAULT  = 348150;
+
+const THB = n => '฿' + (Math.round(n||0)).toLocaleString('en-US');
+const THB2 = n => '฿' + (n||0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+const fmtDate = d => d ? d.toLocaleDateString('th-TH', {year:'numeric', month:'short', day:'numeric'}) : '—';
+
+/* ============ STATE ============ */
+let homeTx = [], insTx = [], receiveTx = [];
+let homeInitial = 0, insInitial = 0;
+
+/* ============ NAV ============ */
+document.querySelectorAll('.nav a[data-page]').forEach(a=>{
+  a.addEventListener('click', ()=>{
+    document.querySelectorAll('.nav a[data-page]').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    a.classList.add('active');
+    document.getElementById('page-'+a.dataset.page).classList.add('active');
+  });
+});
+
+/* ============ GVIZ FETCH ============ */
+function fetchGvizTable(sheetId, gid){
+  return new Promise((resolve, reject)=>{
+    const cb = '_gvizCb' + Date.now() + Math.floor(Math.random()*100000);
+    const timer = setTimeout(()=>{ delete window[cb]; reject(new Error('gviz timeout gid='+gid)); }, 20000);
+    window[cb] = (resp)=>{ clearTimeout(timer); delete window[cb]; resolve(resp); };
+    const s = document.createElement('script');
+    s.src = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json;responseHandler:${cb}&gid=${gid}&tq=select%20*`;
+    s.onerror = ()=>{ clearTimeout(timer); delete window[cb]; reject(new Error('gviz script error gid='+gid)); };
+    document.head.appendChild(s);
+    setTimeout(()=>{ if(s.parentNode) s.parentNode.removeChild(s); }, 21000);
+  });
+}
+
+function cell(row, idx){ return (row.c && row.c[idx]) ? row.c[idx] : null; }
+function cellNum(row, idx){ const c = cell(row, idx); if(!c) return 0; return typeof c.v === 'number' ? c.v : (Number(c.v)||0); }
+function cellStr(row, idx){ const c = cell(row, idx); if(!c) return ''; return (c.v==null? '' : String(c.v)).trim(); }
+function cellDate(row, idx){
+  const c = cell(row, idx);
+  if(!c || c.v==null) return null;
+  if(typeof c.v === 'string' && c.v.indexOf('Date(')===0){
+    const m = c.v.match(/Date\((\d+),(\d+),(\d+)/);
+    if(m) return new Date(+m[1], +m[2], +m[3]);
+  }
+  if(c.f){ const d = new Date(c.f); if(!isNaN(d)) return d; }
+  const d2 = new Date(c.v); if(!isNaN(d2)) return d2;
+  return null;
+}
+
+/* Loan tx columns: A=Bank(0) B=Year(1) C=Date(2) D=Loan(3) E=Rate(4) F=Install(5) G=Interest(6) H=Principal(7) I=Outstanding(8) */
+function parseLoanTable(resp){
+  const rows = resp.table.rows || [];
+  const out = [];
+  for(const r of rows){
+    if(!r.c) continue;
+    const date = cellDate(r, 2);
+    const bank = cellStr(r, 0);
+    if(!date || !bank) continue; // skips header/blank/note rows regardless of their position
+    out.push({
+      bank, year: cellNum(r,1), date,
+      loanBasis: cellNum(r,3), rate: cellNum(r,4)*100 /* stored as decimal fraction */,
+      install: cellNum(r,5), interest: cellNum(r,6),
+      principal: cellNum(r,7), outstanding: cellNum(r,8)
+    });
+  }
+  out.sort((a,b)=>a.date-b.date);
+  return {rows: out};
+}
+
+/* Receive columns: B=Period(1) C=Name(2) D=DateReceived(3) E=DatePaid(4) F=HomeLoanAmt(5) G=InsLoanAmt(6) */
+function parseReceiveTable(resp){
+  const rows = resp.table.rows || [];
+  const out = [];
+  for(const r of rows){
+    if(!r.c) continue;
+    const name = cellStr(r, 2);
+    const dateReceived = cellDate(r, 3);
+    if(!name || !dateReceived) continue;
+    out.push({
+      period: cellStr(r,1), name, dateReceived,
+      datePaid: cellDate(r,4),
+      homeAmt: cellNum(r,5), insAmt: cellNum(r,6)
+    });
+  }
+  out.sort((a,b)=>a.dateReceived-b.dateReceived);
+  return out;
+}
+
+/* ============ SYNC ============ */
+async function syncFromSheets(manual){
+  const btn = document.getElementById('syncBtn');
+  if(manual && btn){ btn.textContent = '⏳ Syncing...'; btn.disabled = true; }
+  try{
+    const [homeResp, insResp, recvResp] = await Promise.all([
+      fetchGvizTable(SHEET_ID, GID_HOME),
+      fetchGvizTable(SHEET_ID, GID_INS),
+      fetchGvizTable(SHEET_ID, GID_RECV)
+    ]);
+    const home = parseLoanTable(homeResp);
+    const ins  = parseLoanTable(insResp);
+    homeTx = home.rows; homeInitial = HOME_INITIAL_DEFAULT;
+    insTx  = ins.rows;  insInitial  = INS_INITIAL_DEFAULT;
+    receiveTx = parseReceiveTable(recvResp);
+
+    localStorage.setItem('hl_home_tx', JSON.stringify(homeTx));
+    localStorage.setItem('hl_ins_tx', JSON.stringify(insTx));
+    localStorage.setItem('hl_receive', JSON.stringify(receiveTx));
+    localStorage.setItem('hl_home_initial', homeInitial);
+    localStorage.setItem('hl_ins_initial', insInitial);
+    localStorage.setItem('hl_last_sync', new Date().toISOString());
+    localStorage.setItem('hl_data_ver', DATA_VER);
+
+    renderAll();
+  }catch(err){
+    console.error('Sync failed', err);
+    const t = document.getElementById('lastSyncTxt');
+    if(t) t.innerHTML = '<span style="color:var(--danger)">sync error</span>';
+  }finally{
+    if(manual && btn){ btn.textContent = '🔄 Sync Now'; btn.disabled = false; }
+  }
+}
+
+function loadFromCache(){
+  try{
+    if(localStorage.getItem('hl_data_ver') !== DATA_VER) return false;
+    const h = localStorage.getItem('hl_home_tx');
+    const i = localStorage.getItem('hl_ins_tx');
+    const r = localStorage.getItem('hl_receive');
+    if(!h || !i || !r) return false;
+    homeTx = JSON.parse(h).map(x=>({...x, date:new Date(x.date)}));
+    insTx  = JSON.parse(i).map(x=>({...x, date:new Date(x.date)}));
+    receiveTx = JSON.parse(r).map(x=>({...x, dateReceived:new Date(x.dateReceived), datePaid: x.datePaid? new Date(x.datePaid): null}));
+    homeInitial = Number(localStorage.getItem('hl_home_initial')||0);
+    insInitial  = Number(localStorage.getItem('hl_ins_initial')||0);
+    return homeTx.length>0;
+  }catch(e){ return false; }
+}
+
+/* ============ RENDER ============ */
+function renderAll(){
+  const last = localStorage.getItem('hl_last_sync');
+  const t = document.getElementById('lastSyncTxt');
+  if(t && last) t.textContent = new Date(last).toLocaleString('th-TH', {hour:'2-digit',minute:'2-digit',day:'2-digit',month:'short'});
+
+  renderDashboard();
+  renderLoanPage('home', homeTx, homeInitial, 'gridHome', 'homeCards', 'chartHomeBalance');
+  renderLoanPage('ins', insTx, insInitial, 'gridIns', 'insCards', 'chartInsBalance');
+  renderContrib();
+  initPayoffInputs();
+}
+
+function latestOf(arr){ return arr.length ? arr[arr.length-1] : null; }
+function sum(arr, key){ return arr.reduce((s,x)=>s+(x[key]||0),0); }
+
+function avgRecentPayment(arr, months=12){
+  if(!arr.length) return 0;
+  const cutoff = new Date(arr[arr.length-1].date);
+  cutoff.setMonth(cutoff.getMonth()-months);
+  const recent = arr.filter(x=>x.date>=cutoff && x.install>0);
+  if(!recent.length) return Math.round(sum(arr,'install')/arr.length);
+  return Math.round(sum(recent,'install')/recent.length);
+}
+
+function renderDashboard(){
+  const lh = latestOf(homeTx), li = latestOf(insTx);
+  const hOut = lh? lh.outstanding : 0, iOut = li? li.outstanding : 0;
+  const hPaid = homeInitial - hOut, iPaid = insInitial - iOut;
+  const cards = [
+    {label:'ยอดคงเหลือ - บ้าน', value:THB(hOut), sub:`เริ่มต้น ${THB(homeInitial)} · ผ่อนแล้ว ${(hPaid/homeInitial*100||0).toFixed(1)}%`},
+    {label:'ยอดคงเหลือ - ประกันภัย', value:THB(iOut), sub:`เริ่มต้น ${THB(insInitial)} · ผ่อนแล้ว ${(iPaid/insInitial*100||0).toFixed(1)}%`},
+    {label:'ยอดคงเหลือรวม', value:THB(hOut+iOut), sub:`ผ่อนไปแล้วรวม ${THB(hPaid+iPaid)}`},
+    {label:'ดอกเบี้ยสะสมทั้งหมด', value:THB(sum(homeTx,'interest')+sum(insTx,'interest')), sub:'บ้าน + ประกันภัย รวมกัน'},
+    {label:'จำนวนงวดที่จ่ายแล้ว', value:(homeTx.length+insTx.length), sub:`บ้าน ${homeTx.length} · ประกันภัย ${insTx.length} งวด`},
+    {label:'อัปเดตล่าสุด (บ้าน)', value: lh? fmtDate(lh.date):'—', sub:`ธนาคาร ${lh?lh.bank:'—'} · ดอกเบี้ย ${lh?lh.rate.toFixed(2):'—'}%`},
+  ];
+  document.getElementById('dashCards').innerHTML = cards.map(c=>`
+    <div class="card"><div class="label">${c.label}</div><div class="value">${c.value}</div><div class="sub">${c.sub}</div></div>
+  `).join('');
+
+  drawLineChart('chartBalance', [
+    {label:'บ้าน (Home)', data: homeTx.map(x=>({x:x.date,y:x.outstanding})), color:'#4f8cff'},
+    {label:'ประกันภัย (Insurance)', data: insTx.map(x=>({x:x.date,y:x.outstanding})), color:'#22c58b'}
+  ]);
+
+  drawDoughnut('chartSplit',
+    ['เงินต้นที่จ่ายแล้ว','ดอกเบี้ยที่จ่ายแล้ว','ยอดคงเหลือ'],
+    [hPaid+iPaid - (sum(homeTx,'interest')+sum(insTx,'interest')), sum(homeTx,'interest')+sum(insTx,'interest'), hOut+iOut],
+    ['#22c58b','#f5a623','#2a3348']
+  );
+
+  drawYearlySummary('chartYearly', homeTx, insTx);
+}
+
+function renderLoanPage(kind, tx, initial, gridId, cardsId, chartId){
+  const latest = latestOf(tx);
+  const paid = initial - (latest?latest.outstanding:0);
+  const color = kind==='home' ? '#4f8cff' : '#22c58b';
+  const cards = [
+    {label:'ยอดกู้เริ่มต้น', value: THB(initial)},
+    {label:'ยอดคงเหลือปัจจุบัน', value: THB(latest?latest.outstanding:0)},
+    {label:'ผ่อนไปแล้ว', value: THB(paid), sub: initial? (paid/initial*100).toFixed(1)+'% ของยอดกู้':''},
+    {label:'ดอกเบี้ยสะสม', value: THB(sum(tx,'interest'))},
+    {label:'อัตราดอกเบี้ยล่าสุด', value: latest? latest.rate.toFixed(2)+'%' : '—', sub: latest? 'ธนาคาร '+latest.bank : ''},
+    {label:'ค่างวดเฉลี่ย 12 เดือนล่าสุด', value: THB(avgRecentPayment(tx,12))+' /เดือน'},
+  ];
+  document.getElementById(cardsId).innerHTML = cards.map(c=>`
+    <div class="card"><div class="label">${c.label}</div><div class="value">${c.value}</div><div class="sub">${c.sub||''}</div></div>
+  `).join('');
+
+  drawLineChart(chartId, [{label:'Outstanding', data: tx.map(x=>({x:x.date,y:x.outstanding})), color}]);
+
+  const gridEl = document.getElementById(gridId);
+  gridEl.innerHTML = '';
+  new gridjs.Grid({
+    columns: [
+      {name:'วันที่', formatter:(c)=>fmtDate(c)},
+      {name:'ธนาคาร'},
+      {name:'ปีที่'},
+      {name:'อัตราดอกเบี้ย', formatter:(c)=>c.toFixed(2)+'%'},
+      {name:'ค่างวด', formatter:(c)=>THB2(c)},
+      {name:'ดอกเบี้ย', formatter:(c)=>THB2(c)},
+      {name:'เงินต้น', formatter:(c)=>THB2(c)},
+      {name:'ยอดคงเหลือ', formatter:(c)=>THB2(c)},
+    ],
+    data: tx.slice().reverse().map(x=>[x.date, x.bank, x.year, x.rate, x.install, x.interest, x.principal, x.outstanding]),
+    search:true, sort:true, pagination:{limit:15}, resizable:true,
+    className:{table:'gridjs-table'}
+  }).render(gridEl);
+}
+
+function renderContrib(){
+  const byName = {};
+  receiveTx.forEach(r=>{
+    byName[r.name] = byName[r.name] || {home:0, ins:0};
+    byName[r.name].home += r.homeAmt;
+    byName[r.name].ins += r.insAmt;
+  });
+  const names = Object.keys(byName);
+  const totalHome = sum(receiveTx,'homeAmt'), totalIns = sum(receiveTx,'insAmt');
+
+  document.getElementById('contribCards').innerHTML = names.map(n=>`
+    <div class="card">
+      <div class="label">${n}</div>
+      <div class="value">${THB(byName[n].home+byName[n].ins)}</div>
+      <div class="sub">บ้าน ${THB(byName[n].home)} · ประกันภัย ${THB(byName[n].ins)}</div>
+    </div>
+  `).join('') + `
+    <div class="card">
+      <div class="label">รวมทั้งหมด</div>
+      <div class="value">${THB(totalHome+totalIns)}</div>
+      <div class="sub">บ้าน ${THB(totalHome)} · ประกันภัย ${THB(totalIns)}</div>
+    </div>`;
+
+  drawDoughnut('chartContribHome', names, names.map(n=>byName[n].home), ['#4f8cff','#f5a623','#22c58b','#e26fd8']);
+  drawDoughnut('chartContribIns', names, names.map(n=>byName[n].ins), ['#22c58b','#f5a623','#4f8cff','#e26fd8']);
+
+  const gridEl = document.getElementById('gridContrib');
+  gridEl.innerHTML = '';
+  new gridjs.Grid({
+    columns:[
+      {name:'ช่วง (Period)'},
+      {name:'ผู้จ่าย'},
+      {name:'วันที่รับโอน', formatter:(c)=>fmtDate(c)},
+      {name:'วันที่จ่ายจริง', formatter:(c)=>c? fmtDate(c):'—'},
+      {name:'ผ่อนบ้าน', formatter:(c)=>THB2(c)},
+      {name:'ผ่อนประกันภัย', formatter:(c)=>THB2(c)},
+    ],
+    data: receiveTx.slice().reverse().map(r=>[r.period, r.name, r.dateReceived, r.datePaid, r.homeAmt, r.insAmt]),
+    search:true, sort:true, pagination:{limit:15}, resizable:true
+  }).render(gridEl);
+}
+
+/* ============ CHARTS ============ */
+let chartRefs = {};
+function destroyIfExists(id){ if(chartRefs[id]){ chartRefs[id].destroy(); delete chartRefs[id]; } }
+
+function drawLineChart(id, series){
+  destroyIfExists(id);
+  const ctx = document.getElementById(id);
+  if(!ctx) return;
+  chartRefs[id] = new Chart(ctx, {
+    type:'line',
+    data:{ datasets: series.map(s=>({
+      label:s.label, data:s.data, borderColor:s.color, backgroundColor:s.color+'22',
+      fill:true, tension:.25, pointRadius:0, borderWidth:2
+    }))},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      scales:{
+        x:{type:'time', time:{unit:'month'}, grid:{color:'#2a3348'}, ticks:{color:'#93a0bb'}},
+        y:{grid:{color:'#2a3348'}, ticks:{color:'#93a0bb', callback:v=>(v/1e6).toFixed(1)+'M'}}
+      },
+      plugins:{legend:{labels:{color:'#e8ecf4'}}}
+    }
+  });
+}
+
+function drawDoughnut(id, labels, data, colors){
+  destroyIfExists(id);
+  const ctx = document.getElementById(id);
+  if(!ctx) return;
+  chartRefs[id] = new Chart(ctx, {
+    type:'doughnut',
+    data:{ labels, datasets:[{data, backgroundColor:colors, borderColor:'#171e2e', borderWidth:2}] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{color:'#e8ecf4'}}} }
+  });
+}
+
+function drawYearlySummary(id, home, ins){
+  destroyIfExists(id);
+  const ctx = document.getElementById(id);
+  if(!ctx) return;
+  const byYear = {};
+  [...home, ...ins].forEach(x=>{
+    const y = x.date.getFullYear();
+    byYear[y] = byYear[y] || {interest:0, install:0, principal:0};
+    byYear[y].interest += x.interest; byYear[y].install += x.install; byYear[y].principal += x.principal;
+  });
+  const years = Object.keys(byYear).sort();
+  chartRefs[id] = new Chart(ctx, {
+    type:'bar',
+    data:{ labels: years, datasets:[
+      {label:'ดอกเบี้ย', data: years.map(y=>byYear[y].interest), backgroundColor:'#f5a623'},
+      {label:'เงินต้น', data: years.map(y=>byYear[y].principal), backgroundColor:'#22c58b'},
+    ]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      scales:{ x:{stacked:true, ticks:{color:'#93a0bb'}, grid:{display:false}}, y:{stacked:true, ticks:{color:'#93a0bb'}, grid:{color:'#2a3348'}} },
+      plugins:{legend:{labels:{color:'#e8ecf4'}}}
+    }
+  });
+}
+
+/* ============ PAYOFF CALCULATOR ============ */
+function initPayoffInputs(){
+  const lh = latestOf(homeTx), li = latestOf(insTx);
+  document.getElementById('hlBalance').value = lh ? Math.round(lh.outstanding) : 0;
+  document.getElementById('hlRate').value = lh ? lh.rate.toFixed(2) : 3;
+  document.getElementById('hlPayment').value = avgRecentPayment(homeTx,12) || 20000;
+
+  document.getElementById('inBalance').value = li ? Math.round(li.outstanding) : 0;
+  document.getElementById('inRate').value = li ? li.rate.toFixed(2) : 3;
+  document.getElementById('inPayment').value = avgRecentPayment(insTx,12) || 1000;
+
+  calcPayoff();
+}
+
+function monthsToPayoff(balance, annualRatePct, payment){
+  const r = (annualRatePct/100)/12;
+  if(balance<=0) return 0;
+  if(payment<=0) return Infinity;
+  if(r===0) return balance/payment;
+  const monthlyInterest = balance*r;
+  if(payment <= monthlyInterest) return Infinity;
+  return -Math.log(1 - (balance*r)/payment) / Math.log(1+r);
+}
+
+function buildProjection(balance, annualRatePct, payment, maxMonths){
+  const r = (annualRatePct/100)/12;
+  const pts = [{m:0, balance}];
+  let b = balance;
+  for(let m=1;m<=maxMonths && b>0.5;m++){
+    const interest = b*r;
+    let princ = payment - interest;
+    if(princ<=0){ break; } // never pays off
+    b = Math.max(0, b - princ);
+    pts.push({m, balance:b});
+  }
+  return pts;
+}
+
+function monthsLabel(months){
+  if(!isFinite(months)) return null;
+  const total = Math.ceil(months);
+  const y = Math.floor(total/12), m = total%12;
+  let s = '';
+  if(y>0) s += y + ' ปี ';
+  s += m + ' เดือน';
+  return {y,m,text:s.trim(), totalMonths: total};
+}
+
+function payoffDate(months){
+  if(!isFinite(months)) return null;
+  const d = new Date();
+  d.setMonth(d.getMonth() + Math.ceil(months));
+  return d;
+}
+
+function renderPayoffBlock(prefix, resultElId, chartId, color){
+  const balance = Number(document.getElementById(prefix+'Balance').value)||0;
+  const rate = Number(document.getElementById(prefix+'Rate').value)||0;
+  const payment = Number(document.getElementById(prefix+'Payment').value)||0;
+  const months = monthsToPayoff(balance, rate, payment);
+  const el = document.getElementById(resultElId);
+
+  if(!isFinite(months)){
+    el.innerHTML = `<div class="warn-banner">⚠️ ค่างวดต่อเดือนไม่พอจ่ายดอกเบี้ยรายเดือน (${THB(balance*(rate/100)/12)}/เดือน) — ผ่อนแบบนี้จะไม่มีวันครบ ต้องเพิ่มค่างวด</div>`;
+    destroyIfExists(chartId);
+    return {months:Infinity};
+  }
+  const lbl = monthsLabel(months);
+  const pdate = payoffDate(months);
+  el.innerHTML = `<div class="result-banner"><div class="big">${lbl.text} <small>(รวม ${lbl.totalMonths} งวด)</small></div><div class="sub" style="margin-top:6px;color:var(--sub);font-size:13px;">คาดว่าจะผ่อนครบประมาณ <b style="color:var(--text)">${fmtDate(pdate)}</b></div></div>`;
+
+  const pts = buildProjection(balance, rate, payment, lbl.totalMonths+2);
+  const today = new Date();
+  drawLineChart(chartId, [{
+    label:'Projected Balance', color,
+    data: pts.map(p=>({x:new Date(today.getFullYear(), today.getMonth()+p.m, today.getDate()), y:p.balance}))
+  }]);
+  return {months, totalMonths: lbl.totalMonths, payoffDate: pdate};
+}
+
+function calcPayoff(){
+  const h = renderPayoffBlock('hl','hlResult','chartHlProjection','#4f8cff');
+  const i = renderPayoffBlock('in','inResult','chartInProjection','#22c58b');
+
+  const cb = document.getElementById('combinedResult');
+  if(!isFinite(h.months) || !isFinite(i.months)){
+    cb.innerHTML = `<div style="font-size:14px;color:var(--sub)">⏳ ยังคำนวณยอดรวมไม่ได้ — ปรับค่างวดให้มากกว่าดอกเบี้ยรายเดือนก่อน</div>`;
+    return;
+  }
+  const later = h.totalMonths >= i.totalMonths ? h : i;
+  const laterName = h.totalMonths >= i.totalMonths ? 'ผ่อนบ้าน' : 'ผ่อนประกันภัย';
+  cb.innerHTML = `
+    <div class="label" style="color:var(--sub);font-size:12px;margin-bottom:6px;">สรุปรวม — หนี้บ้านทั้งหมดจะหมดเมื่อไหร่</div>
+    <div class="big">${monthsLabel(later.totalMonths).text} <small>นับจากวันนี้</small></div>
+    <div class="sub" style="margin-top:8px;color:var(--sub);font-size:13px;">
+      ตัวที่ผ่อนนานกว่าคือ <b style="color:var(--text)">${laterName}</b> — คาดว่าจะครบทั้งหมดประมาณ <b style="color:var(--text)">${fmtDate(later
